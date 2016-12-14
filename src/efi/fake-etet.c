@@ -69,9 +69,42 @@ InstallETET(VOID)
 	return EFI_SUCCESS;
 }
 
+/*
+ * According to TCG EFI Protocol Specification for TPM 2.0 family,
+ * all events generated after the invocation of EFI_TCG2_GET_EVENT_LOG
+ * shall be stored in an instance of an EFI_CONFIGURATION_TABLE aka
+ * EFI TCG 2.0 final events table. Hence, it is necessary to trigger the
+ * internal switch through calling get_event_log() in order to allow
+ * to retrieve the logs from OS runtime.
+ */
+static EFI_STATUS
+TriggerETET(EFI_TCG2_EVENT_LOG_FORMAT Format)
+{
+	EFI_TCG2_PROTOCOL *Tcg2;
+	EFI_GUID Guid = EFI_TCG2_PROTOCOL_GUID;
+	EFI_STATUS Status;
+
+	/* Try to get efi tpm2 protocol */
+	Status = LibLocateProtocol(&Guid, (VOID **)&Tcg2);
+	if (EFI_ERROR(Status)) {
+		Print(L"Unable to locate EFI TPM2 Protocol: %r\n",
+		      Status);
+		return Status;
+	}
+
+	EFI_PHYSICAL_ADDRESS Start;
+	EFI_PHYSICAL_ADDRESS End;
+	BOOLEAN Truncated;
+
+	return uefi_call_wrapper(Tcg2->GetEventLog, 5, Tcg2,
+				 Format, &Start, &End, &Truncated);
+}
+
 EFI_STATUS
 efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 {
+	EFI_STATUS Status;
+
 	InitializeLib(ImageHandle, Systab);
 
 	EFI_TCG2_FINAL_EVENTS_TABLE *Table;
@@ -89,14 +122,30 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 		      Version, Table->NumberOfEvents);
 		Print(L"Skip to install a fake ETET\n");
 
+		/*
+		 * ETET may be not triggered to start logging the events
+		 * if the number of events recorded is still zero.
+		 */
+		if (!Table->NumberOfEvents)
+			goto trigger;
+
 		return EFI_SUCCESS;
 	}
 
-	EFI_STATUS Status = InstallETET();
-	if (!EFI_ERROR(Status))
-		Print(L"Fake ETET installed\n");
-	else
+	Status = InstallETET();
+	if (EFI_ERROR(Status)) {
 		Print(L"Unable to install the fake ETET: %r\n", Status);
+		return Status;
+	}
+
+	Print(L"Fake ETET installed\n");
+
+trigger:
+	Status = TriggerETET(EFI_TCG2_EVENT_LOG_FORMAT_TCG_2);
+	if (!EFI_ERROR(Status))
+		Print(L"ETET triggered\n");
+	else
+		Print(L"Unable to trigger ETET\n");
 
 	return Status;
 }

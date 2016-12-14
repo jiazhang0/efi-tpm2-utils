@@ -10,7 +10,7 @@ CFLAGS += -mno-mmx -mno-sse -maccumulate-outgoing-args \
 	  $(addprefix -I, $(TOPDIR)/src/include $(gnuefi_includedir) \
 	  $(shell $(CC) -print-file-name=include)) \
 	  -DCONFIG_$(EFI_ARCH) -DGNU_EFI_USE_MS_ABI \
-	  -DETET_VERSION=L\"$(ETET_VERSION)\"
+	  -DETU_VERSION=L\"$(ETU_VERSION)\"
 
 ifeq ($(EFI_ARCH),x86_64)
     DEFAULT_ARCH = x64

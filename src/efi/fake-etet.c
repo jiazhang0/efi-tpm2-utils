@@ -16,22 +16,6 @@
 #include <tcg2.h>
 #include <etet.h>
 
-static VOID *
-FindETET(VOID)
-{
-	EFI_GUID Guid = EFI_TCG2_FINAL_EVENTS_TABLE_GUID;
-	VOID *Table;
-	EFI_STATUS Status;
-
-	Status = LibGetSystemConfigurationTable(&Guid, &Table);
-	if (EFI_ERROR(Status)) {
-		Print(L"Unable to find ETET: %r\n", Status);
-		return NULL;
-	}
-
-	return Table;
-}
-
 static EFI_STATUS
 InstallETET(VOID)
 {
@@ -99,13 +83,12 @@ TriggerETET(EFI_TCG2_EVENT_LOG_FORMAT Format)
 EFI_STATUS
 efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 {
-	EFI_STATUS Status;
-
 	InitializeLib(ImageHandle, Systab);
 
 	EFI_TCG2_FINAL_EVENTS_TABLE *Table;
-	Table = (EFI_TCG2_FINAL_EVENTS_TABLE *)FindETET();
-	if (Table) {
+
+	EFI_STATUS Status = EtetLocateAddress((VOID **)&Table);
+	if (!EFI_ERROR(Status)) {
 		UINT64 Version = Table->Version;
 
 		if (!Version || Version >

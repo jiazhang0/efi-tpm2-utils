@@ -34,7 +34,8 @@ LIB_TARGET := $(LIB_NAME).a
 
 OBJS_$(LIB_NAME) := \
 	build_info.o \
-	tcg2.o
+	tcg2.o \
+	etet.o
 
 TARGETS = fake-etet.efi tpm2-capability.efi
 FAKE_ETET_OBJS = fake-etet.o

@@ -16,6 +16,8 @@
 #include <efi.h>
 #include <efilib.h>
 
+#include <tcg2.h>
+
 #pragma pack(1)
 
 #define EFI_TCG2_FINAL_EVENTS_TABLE_GUID \
@@ -53,5 +55,8 @@ union EFI_TCG2_FINAL_EVENTS_TABLE_UNION {
 };
 
 #pragma pack()
+
+extern EFI_STATUS
+EtetLocateAddress(VOID **Table);
 
 #endif	/* ETET_H */

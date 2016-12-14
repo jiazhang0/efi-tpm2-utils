@@ -78,9 +78,9 @@ Tcg2DetectTPM(VOID)
 
 	if (TpmCapability.StructureVersion.Major == 1 &&
 			TpmCapability.StructureVersion.Minor == 0) {
-		EFI_TCG2_BOOT_SERVICE_CAPABILITY_1_X *Tpm1Capability;
+		EFI_TCG_BOOT_SERVICE_CAPABILITY *Tpm1Capability;
 
-		Tpm1Capability = (EFI_TCG2_BOOT_SERVICE_CAPABILITY_1_X *)&TpmCapability;
+		Tpm1Capability = (EFI_TCG_BOOT_SERVICE_CAPABILITY *)&TpmCapability;
 		if (Tpm1Capability->TPMPresentFlag) {
 			Print(L"TPM 1.x device detected\n");
 			return EFI_SUCCESS;

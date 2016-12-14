@@ -48,18 +48,20 @@ typedef struct {
 } EFI_TCG2_BOOT_SERVICE_CAPABILITY;
 
 typedef struct {
+	UINT8 Major;
+	UINT8 Minor;
+	UINT8 RevMajor;
+	UINT8 RevMinor;
+} EFI_TCG_VERSION;
+
+typedef struct {
 	UINT8 Size;
-	EFI_TCG2_VERSION StructureVersion;
-	EFI_TCG2_VERSION ProtocolVersion;
-	EFI_TCG2_EVENT_ALGORITHM_BITMAP HashAlgorithmBitmap;
-	EFI_TCG2_EVENT_LOG_BITMAP SupportedEventLogs;
+	EFI_TCG_VERSION StructureVersion;
+	EFI_TCG_VERSION ProtocolVersion;
+	UINT8 HashAlgorithmBitmap;
 	BOOLEAN TPMPresentFlag;
-	UINT16 MaxCommandSize;
-	UINT16 MaxResponseSize;
-	UINT32 ManufacturerID;
-	UINT32 NumberOfPcrBanks;
-	EFI_TCG2_EVENT_ALGORITHM_BITMAP ActivePcrBanks;
-} EFI_TCG2_BOOT_SERVICE_CAPABILITY_1_X;
+	BOOLEAN TPMDeactivatedFlag;
+} EFI_TCG_BOOT_SERVICE_CAPABILITY;
 
 #pragma pack(1)
 

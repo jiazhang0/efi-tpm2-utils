@@ -28,27 +28,40 @@ LDFLAGS += -nostdlib -shared -Bsymbolic -L$(gnuefi_libdir) \
 
 # TODO: __attribute__((ms_abi)) is only available since gcc 4.7
 
+LIB_NAME := libefitcg2
+
+LIB_TARGET := $(LIB_NAME).a
+
+OBJS_$(LIB_NAME) := \
+	tcg2.o
+
 TARGETS = fake-etet.efi tpm2-capability.efi
 FAKE_ETET_OBJS = fake-etet.o
 TPM2_CAPABILITY_OBJS = tpm2-capability.o
 
 .PHONE: all clean install
 
-all: $(TARGETS)
+all: $(TARGETS) Makefile
 	@echo "EFI_ARCH: $(EFI_ARCH)"
 
 clean:
-	$(RM) $(TARGETS) *.so *.debug $(FAKE_ETET_OBJS)
+	$(RM) $(TARGETS) *.so *.debug $(FAKE_ETET_OBJS) \
+		$(TPM2_CAPABILITY_OBJS)
+	$(RM) $(LIB_TARGET) $(OBJS_$(LIB_NAME)) \
+		$(addsuffix .*, $(LIB_TARGET))
 
 install: fake-etet.efi tpm2-capability.efi
 	cp -f $^ $(EFI_DESTDIR)
 
-fake-etet.so: $(FAKE_ETET_OBJS)
-tpm2-capability.so: $(TPM2_CAPABILITY_OBJS)
+$(LIB_NAME).a: $(OBJS_$(LIB_NAME))
+	$(AR) rcs $@ $^
+
+fake-etet.so: $(FAKE_ETET_OBJS) $(LIB_TARGET)
+tpm2-capability.so: $(TPM2_CAPABILITY_OBJS) $(LIB_TARGET)
 
 %.so: %.o
 	$(LD) $(LDFLAGS) -o $@ --start-group $^ $(shell $(CC) -print-libgcc-file-name) \
--lgnuefi -lefi --end-group
+-lgnuefi -lefi $(LIB_TARGET) --end-group
 	@echo '--------------- List unresolved symbols ---------------'
 	@! $(NM) $@ | grep -iw u
 	@echo '-------------------------------------------------------'

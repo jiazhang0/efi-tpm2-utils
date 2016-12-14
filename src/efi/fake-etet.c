@@ -82,16 +82,11 @@ static EFI_STATUS
 TriggerETET(EFI_TCG2_EVENT_LOG_FORMAT Format)
 {
 	EFI_TCG2_PROTOCOL *Tcg2;
-	EFI_GUID Guid = EFI_TCG2_PROTOCOL_GUID;
 	EFI_STATUS Status;
 
-	/* Try to get efi tpm2 protocol */
-	Status = LibLocateProtocol(&Guid, (VOID **)&Tcg2);
-	if (EFI_ERROR(Status)) {
-		Print(L"Unable to locate EFI TPM2 Protocol: %r\n",
-		      Status);
+	Status = Tcg2LocateProtocol(&Tcg2);;
+	if (EFI_ERROR(Status))
 		return Status;
-	}
 
 	EFI_PHYSICAL_ADDRESS Start;
 	EFI_PHYSICAL_ADDRESS End;

@@ -1,0 +1,7 @@
+src/efi/fake-etet.efi
+*.debug
+*.sh
+*.o
+*.so
+*.a
+*.patch

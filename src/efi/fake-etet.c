@@ -12,205 +12,104 @@
 
 #include <efi.h>
 #include <efilib.h>
-#include "etet.h"
 
-typedef UINT32 EFI_TCG2_EVENT_ALGORITHM_BITMAP;
-typedef UINT32 EFI_TCG2_EVENT_LOG_BITMAP;
-typedef UINT32 EFI_TCG2_EVENT_LOG_FORMAT;
+#include <etet.h>
 
-typedef struct tdEFI_TCG2_VERSION {
-	UINT8 Major;
-	UINT8 Minor;
-} EFI_TCG2_VERSION;
-
-typedef struct tdEFI_TCG2_BOOT_SERVICE_CAPABILITY {
-	UINT8 Size;
-	EFI_TCG2_VERSION StructureVersion;
-	EFI_TCG2_VERSION ProtocolVersion;
-	EFI_TCG2_EVENT_ALGORITHM_BITMAP HashAlgorithmBitmap;
-	EFI_TCG2_EVENT_LOG_BITMAP SupportedEventLogs;
-	BOOLEAN TPMPresentFlag;
-	UINT16 MaxCommandSize;
-	UINT16 MaxResponseSize;
-	UINT32 ManufacturerID;
-	UINT32 NumberOfPcrBanks;
-	EFI_TCG2_EVENT_ALGORITHM_BITMAP ActivePcrBanks;
-} EFI_TCG2_BOOT_SERVICE_CAPABILITY;
-
-typedef struct tdEFI_TCG2_EVENT_HEADER {
-	UINT32 HeaderSize;
-	UINT16 HeaderVersion;
-	TCG_PCRINDEX PCRIndex;
-	TCG_EVENTTYPE EventType;
-} EFI_TCG2_EVENT_HEADER;
-
-typedef struct tdEFI_TCG2_EVENT { 
-	UINT32 Size; 
-	EFI_TCG2_EVENT_HEADER Header; 
-	UINT8 Event[]; 
-} EFI_TCG2_EVENT;
-
-struct tdEFI_TCG2_PROTOCOL;
-
-typedef EFI_STATUS
-(EFIAPI *EFI_TCG2_GET_CAPABILITY) (
-	IN struct tdEFI_TCG2_PROTOCOL *This,
-	IN OUT EFI_TCG2_BOOT_SERVICE_CAPABILITY *ProtocolCapability
-);
-
-typedef EFI_STATUS
-(EFIAPI *EFI_TCG2_GET_EVENT_LOG) ( 
-	IN struct tdEFI_TCG2_PROTOCOL *This,
-	IN EFI_TCG2_EVENT_LOG_FORMAT EventLogFormat,
-	OUT EFI_PHYSICAL_ADDRESS *EventLogLocation,
-	OUT EFI_PHYSICAL_ADDRESS *EventLogLastEntry,
-	OUT BOOLEAN *EventLogTruncated
-);
-
-typedef EFI_STATUS
-(EFIAPI *EFI_TCG2_HASH_LOG_EXTEND_EVENT) (
-	IN struct tdEFI_TCG2_PROTOCOL *This,
-	IN UINT64 Flags,
-	IN EFI_PHYSICAL_ADDRESS DataToHash,
-	IN UINT64 DataToHashLen,
-	IN EFI_TCG2_EVENT *EfiTcgEvent
-);
-
-typedef EFI_STATUS
-(EFIAPI *EFI_TCG2_SUBMIT_COMMAND) (
-	IN struct tdEFI_TCG2_PROTOCOL *This,
-	IN UINT32 InputParameterBlockSize,
-	IN UINT8 *InputParameterBlock,
-	IN UINT32 OutputParameterBlockSize,
-	IN UINT8 *OutputParameterBlock
-);
-
-typedef EFI_STATUS
-(EFIAPI *EFI_TCG2_GET_ACTIVE_PCR_BANKS) (
-	IN struct tdEFI_TCG2_PROTOCOL *This,
-	OUT UINT32 *ActivePcrBanks
-);
-
-typedef EFI_STATUS
-(EFIAPI *EFI_TCG2_SET_ACTIVE_PCR_BANKS) (
-	IN struct tdEFI_TCG2_PROTOCOL *This,
-	IN UINT32 ActivePcrBanks
-);
-
-typedef EFI_STATUS
-(EFIAPI * EFI_TCG2_GET_RESULT_OF_SET_ACTIVE_PCR_BANKS) (
-	IN struct tdEFI_TCG2_PROTOCOL *This,
-	OUT UINT32 *OperationPresent,
-	OUT UINT32 *Response
-);
-
-typedef struct tdEFI_TCG2_PROTOCOL {
-	EFI_TCG2_GET_CAPABILITY GetCapability;
-	EFI_TCG2_GET_EVENT_LOG GetEventLog;
-	EFI_TCG2_HASH_LOG_EXTEND_EVENT HashLogExtendEvent;
-	EFI_TCG2_SUBMIT_COMMAND SubmitCommand;
-	EFI_TCG2_GET_ACTIVE_PCR_BANKS GetActivePcrBanks;
-	EFI_TCG2_SET_ACTIVE_PCR_BANKS SetActivePcrBanks;
-	EFI_TCG2_GET_RESULT_OF_SET_ACTIVE_PCR_BANKS GetResultOfSetActivePcrBanks;
-} EFI_TCG2_PROTOCOL;
-
-#define EFI_TCG2_PROTOCOL_GUID	\
-	{ 0x607f766c, 0x7455, 0x42be,	\
-	{ 0x93, 0x0b, 0xe4, 0xd7, 0x6d, 0xb2, 0x72, 0x0f } }
-
-static void *
-find_etet(void)
+static VOID *
+FindETET(VOID)
 {
-	EFI_GUID guid = EFI_TCG2_FINAL_EVENTS_TABLE_GUID;
-	void *table;
-	EFI_STATUS rc;
+	EFI_GUID Guid = EFI_TCG2_FINAL_EVENTS_TABLE_GUID;
+	VOID *Table;
+	EFI_STATUS Status;
 
-	rc = LibGetSystemConfigurationTable(&guid, &table);
-	if (EFI_ERROR(rc)) {
-		Print(L"Unable to find ETET: %r\n", rc);
+	Status = LibGetSystemConfigurationTable(&Guid, &Table);
+	if (EFI_ERROR(Status)) {
+		Print(L"Unable to find ETET: %r\n", Status);
 		return NULL;
 	}
 
-	return table;
+	return Table;
 }
 
 static EFI_STATUS
-install_etet(void)
+InstallETET(VOID)
 {
 	struct {
 		EFI_TCG2_FINAL_EVENTS_TABLE v1;
-	} __attribute__((packed)) etet = {
-		.v1 = { 1, 0,  },
+	} __attribute__((packed)) Table = {
+		.v1 = { 1, 0, },
 	};
-	UINTN etet_nr_page;
-	EFI_PHYSICAL_ADDRESS etet_boot_mem = 0;
-	EFI_GUID guid = EFI_TCG2_FINAL_EVENTS_TABLE_GUID;
-	EFI_STATUS rc;
-	
-	etet_nr_page = (sizeof(etet) + EFI_PAGE_SIZE - 1) >> EFI_PAGE_SHIFT;
 
-	rc = uefi_call_wrapper(BS->AllocatePages, 4, AllocateAnyPages,
-			       EfiACPIMemoryNVS, 1,
-			       &etet_boot_mem);
-	if (EFI_ERROR(rc)) {
-		Print(L"AllocatePages failed: %r\n", rc);
-		return rc;
+	UINTN NumberOfPages;
+	EFI_PHYSICAL_ADDRESS BootMemoryAddress = 0;
+	EFI_STATUS Status;
+	
+	NumberOfPages = (sizeof(Table) + EFI_PAGE_SIZE - 1) >> EFI_PAGE_SHIFT;
+	Status = uefi_call_wrapper(BS->AllocatePages, 4, AllocateAnyPages,
+				   EfiACPIMemoryNVS, NumberOfPages,
+				   &BootMemoryAddress);
+	if (EFI_ERROR(Status)) {
+		Print(L"Unable to allocate memory for ETET table: %r\n",
+		      Status);
+		return Status;
 	}
 
-	CopyMem((void *)etet_boot_mem, &etet, sizeof(etet));
+	CopyMem((VOID *)BootMemoryAddress, &Table, sizeof(Table));
 
-	rc = uefi_call_wrapper(BS->InstallConfigurationTable, 2, &guid,
-			       (VOID *)etet_boot_mem);
-	if (EFI_ERROR(rc)) {
-		Print(L"Unable to install ETET table: %r\n", rc);
+	EFI_GUID Guid = EFI_TCG2_FINAL_EVENTS_TABLE_GUID;
+	Status = uefi_call_wrapper(BS->InstallConfigurationTable, 2, &Guid,
+				   (VOID *)BootMemoryAddress);
+	if (EFI_ERROR(Status)) {
+		Print(L"Unable to install ETET table: %r\n", Status);
 		uefi_call_wrapper(BS->FreePages, 2,
-				  etet_boot_mem, etet_nr_page);
-		return rc;
+				  BootMemoryAddress, NumberOfPages);
+		return Status;
 	}
 
 	return EFI_SUCCESS;
 }
 
 EFI_STATUS
-efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab)
+efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 {
-	EFI_STATUS rc;
-	EFI_TCG2_FINAL_EVENTS_TABLE *table;
-	EFI_TCG2_PROTOCOL *tcg2;
-	EFI_GUID guid = EFI_TCG2_PROTOCOL_GUID;
+	InitializeLib(ImageHandle, Systab);
 
-	InitializeLib(image_handle, systab);
+	EFI_STATUS Status;
+	EFI_TCG2_PROTOCOL *Tcg2;
+	EFI_GUID Guid = EFI_TCG2_PROTOCOL_GUID;
 
 	/* Try to get efi tpm2 protocol */
-	rc = LibLocateProtocol(&guid, (VOID **)&tcg2);
-	if (EFI_ERROR(rc))
-		Print(L"Unable to locate EFI TPM2 Protocol: %r\n", rc);
+	Status = LibLocateProtocol(&Guid, (VOID **)&Tcg2);
+	if (EFI_ERROR(Status))
+		Print(L"Unable to locate EFI TPM2 Protocol: %r\n",
+		      Status);
 	else
-		Print(L"EFI TPM2 Protocol installed\n");
+		Print(L"EFI TPM2 Protocol already installed\n");
 
-	table = (EFI_TCG2_FINAL_EVENTS_TABLE *)find_etet();
-	if (table) {
-		UINT64 version = table->Version;
+	EFI_TCG2_FINAL_EVENTS_TABLE *Table;
 
-		if (!version || version > EFI_TCG2_FINAL_EVENTS_TABLE_VERSION) {
-			Print(L"Unsupported ETET (version %llx)\n", version);
-			uefi_call_wrapper(BS->Stall, 1, 3000000);
+	Table = (EFI_TCG2_FINAL_EVENTS_TABLE *)FindETET();
+	if (Table) {
+		UINT64 Version = Table->Version;
+
+		if (!Version || Version >
+				EFI_TCG2_FINAL_EVENTS_TABLE_VERSION) {
+			Print(L"Unsupported ETET (version %llx)\n", Version);
 			return EFI_UNSUPPORTED;
 		}
 
 		Print(L"ETET (version %lld, number of events %lld) detected\n",
-		      version, table->NumberOfEvents);
-		Print(L"Launching fake-etet ignored\n");
-		uefi_call_wrapper(BS->Stall, 1, 3000000);
+		      Version, Table->NumberOfEvents);
+		Print(L"Skip to install a fake ETET\n");
 
 		return EFI_SUCCESS;
 	}
 
-	rc = install_etet();
-	if (!EFI_ERROR(rc))
+	Status = InstallETET();
+	if (!EFI_ERROR(Status))
 		Print(L"Fake ETET installed\n");
+	else
+		Print(L"Unable to install the fake ETET: %r\n", Status);
 
-	uefi_call_wrapper(BS->Stall, 1, 3000000);
-
-	return rc;
+	return Status;
 }

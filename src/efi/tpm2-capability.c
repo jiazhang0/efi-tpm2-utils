@@ -15,55 +15,96 @@
 
 #include <tcg2.h>
 
-static EFI_STATUS
-DetectTPM(EFI_TCG2_PROTOCOL *Tcg2)
-{
-	EFI_TCG2_BOOT_SERVICE_CAPABILITY TpmCapability;
-	EFI_STATUS Status;
-
-	TpmCapability.Size = (UINT8)sizeof(TpmCapability);
-	Status = uefi_call_wrapper(Tcg2->GetCapability, 2, Tcg2,
-				   &TpmCapability);
-	if (EFI_ERROR(Status)) {
-		Print(L"Unable to get the TPM capability: %r\n",
-		      Status);
-		return Status;
-	}
-
-	if (TpmCapability.StructureVersion.Major == 1 &&
-			TpmCapability.StructureVersion.Minor == 0) {
-		EFI_TCG2_BOOT_SERVICE_CAPABILITY_1_X *Tpm1Capability;
-
-		Tpm1Capability = (EFI_TCG2_BOOT_SERVICE_CAPABILITY_1_X *)&TpmCapability;
-		if (Tpm1Capability->TPMPresentFlag) {
-			Print(L"TPM 1.x device detected\n");
-			return EFI_SUCCESS;
-		}
-	} else {
-		if (TpmCapability.TPMPresentFlag) {
-			Print(L"TPM 2.0 device detected\n");
-			return EFI_SUCCESS;
-		}
-	}
-
-	Print(L"No TPM device detected\n");
-
-	return EFI_NOT_FOUND;
-}
-
 EFI_STATUS
 efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 {
 	InitializeLib(ImageHandle, Systab);
 
-	EFI_TCG2_PROTOCOL *Tcg2;
+	UINTN TpmCapabilitySize = 0;
 	EFI_STATUS Status;
 
-	Status = Tcg2LocateProtocol(&Tcg2);
+	Status = Tcg2GetCapability(NULL, (UINT8 *)&TpmCapabilitySize);
 	if (EFI_ERROR(Status))
 		return Status;
 
-	Print(L"EFI TPM2 Protocol already installed\n");
+	EFI_TCG2_BOOT_SERVICE_CAPABILITY *TpmCapability;
+	TpmCapability = AllocatePool(TpmCapabilitySize);
+	if (!TpmCapability)
+		return Status;
 
-	return DetectTPM(Tcg2);
+	Status = Tcg2GetCapability(TpmCapability, (UINT8 *)&TpmCapabilitySize);
+	if (EFI_ERROR(Status))
+		goto out;
+
+	if (TpmCapability->StructureVersion.Major == 1 &&
+			TpmCapability->StructureVersion.Minor == 0) {
+		EFI_TCG_BOOT_SERVICE_CAPABILITY *Tpm1Capability;
+
+		Tpm1Capability = (EFI_TCG_BOOT_SERVICE_CAPABILITY *)&TpmCapability;
+
+		Print(L"Structure Version: %d.%d (Rev %d.%d)\n",
+		      (UINT8)Tpm1Capability->StructureVersion.Major,
+		      (UINT8)Tpm1Capability->StructureVersion.Minor,
+		      (UINT8)Tpm1Capability->StructureVersion.RevMajor,
+		      (UINT8)Tpm1Capability->StructureVersion.RevMinor);
+
+		Print(L"Protocol Version: %d.%d (Rev %d.%d)\n",
+		      (UINT8)Tpm1Capability->ProtocolVersion.Major,
+		      (UINT8)Tpm1Capability->StructureVersion.Minor,
+		      (UINT8)Tpm1Capability->ProtocolVersion.RevMajor,
+		      (UINT8)Tpm1Capability->StructureVersion.RevMinor);
+
+		Print(L"Hash Algorithm Bitmap: 0x%x\n",
+		      (UINT8)Tpm1Capability->HashAlgorithmBitmap);
+
+		Print(L"TPM Present: %d\n",
+		      (BOOLEAN)Tpm1Capability->TPMPresentFlag);
+
+		Print(L"TPM Deactivated: %d\n",
+		      (BOOLEAN)Tpm1Capability->TPMDeactivatedFlag);
+	} else if (TpmCapability->StructureVersion.Major == 1 &&
+			TpmCapability->StructureVersion.Minor == 1) {
+		Print(L"Structure Version: %d.%d\n",
+		      (UINT8)TpmCapability->StructureVersion.Major,
+		      (UINT8)TpmCapability->StructureVersion.Minor);
+
+		Print(L"Protocol Version: %d.%d\n",
+		      (UINT8)TpmCapability->ProtocolVersion.Major,
+		      (UINT8)TpmCapability->StructureVersion.Minor);
+
+		Print(L"Hash Algorithm Bitmap: 0x%x\n",
+		      TpmCapability->HashAlgorithmBitmap);
+
+		Print(L"Supported Event Logs: 0x%x\n",
+		      TpmCapability->SupportedEventLogs);
+
+		Print(L"TPM Present: %d\n",
+		      (BOOLEAN)TpmCapability->TPMPresentFlag);
+
+		Print(L"Max Command Size: %d-byte\n",
+		      (UINT16)TpmCapability->MaxCommandSize);
+
+		Print(L"Max Response Size: %d-byte\n",
+		      (UINT16)TpmCapability->MaxResponseSize);
+
+		Print(L"Manufacturer ID: 0x%x\n",
+		      TpmCapability->ManufacturerID);
+
+		Print(L"Number of Pcr Banks: %d\n",
+		      TpmCapability->NumberOfPcrBanks);
+
+		Print(L"Active Pcr Banks: %d\n",
+		      TpmCapability->ActivePcrBanks);
+	} else {
+		Print(L"Unsupported structure version: %d.%d\n",
+		      (UINT8)TpmCapability->StructureVersion.Major,
+		      (UINT8)TpmCapability->StructureVersion.Minor);
+
+		Status = EFI_UNSUPPORTED;
+	}
+
+out:
+	FreePool(TpmCapability);
+
+	return Status;
 }

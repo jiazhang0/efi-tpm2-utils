@@ -1,4 +1,4 @@
-src/efi/fake-etet.efi
+*.efi
 *.debug
 *.sh
 *.o

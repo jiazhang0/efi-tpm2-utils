@@ -69,6 +69,42 @@ InstallETET(VOID)
 	return EFI_SUCCESS;
 }
 
+static BOOLEAN
+DetectTPM(EFI_TCG2_PROTOCOL *Tcg2)
+{
+	EFI_TCG2_BOOT_SERVICE_CAPABILITY TpmCapability;
+	EFI_STATUS Status;
+
+	TpmCapability.Size = (UINT8)sizeof(TpmCapability);
+	Status = uefi_call_wrapper(Tcg2->GetCapability, 2, Tcg2,
+				   &TpmCapability);
+	if (EFI_ERROR(Status)) {
+		Print(L"Unable to get the TPM capability: %r\n",
+		      Status);
+		return FALSE;
+	}
+
+	if (TpmCapability.StructureVersion.Major == 1 &&
+			TpmCapability.StructureVersion.Minor == 0) {
+		EFI_TCG2_BOOT_SERVICE_CAPABILITY_1_X *Tpm1Capability;
+
+		Tpm1Capability = (EFI_TCG2_BOOT_SERVICE_CAPABILITY_1_X *)&TpmCapability;
+		if (Tpm1Capability->TPMPresentFlag) {
+			Print(L"TPM 1.x device detected\n");
+			return TRUE;
+		}
+	} else {
+		if (TpmCapability.TPMPresentFlag) {
+			Print(L"TPM 2.0 device detected\n");
+			return TRUE;
+		}
+	}
+
+	Print(L"No TPM device detected\n");
+
+        return FALSE;
+}
+
 EFI_STATUS
 efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 {
@@ -83,8 +119,11 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 	if (EFI_ERROR(Status))
 		Print(L"Unable to locate EFI TPM2 Protocol: %r\n",
 		      Status);
-	else
+	else {
 		Print(L"EFI TPM2 Protocol already installed\n");
+
+		DetectTPM(Tcg2);
+	}
 
 	EFI_TCG2_FINAL_EVENTS_TABLE *Table;
 

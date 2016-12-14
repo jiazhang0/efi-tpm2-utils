@@ -13,6 +13,7 @@
 #include <efi.h>
 #include <efilib.h>
 
+#include <tcg2.h>
 #include <etet.h>
 
 static VOID *

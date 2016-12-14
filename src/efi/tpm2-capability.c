@@ -13,7 +13,7 @@
 #include <efi.h>
 #include <efilib.h>
 
-#include <etet.h>
+#include <tcg2.h>
 
 static EFI_STATUS
 DetectTPM(EFI_TCG2_PROTOCOL *Tcg2)

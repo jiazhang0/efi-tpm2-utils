@@ -1,5 +1,5 @@
 /*
- * Fake ETET EFI application
+ * Show the TPM capability information
  *
  * Copyright (c) 2016, Wind River Systems, Inc.
  * All rights reserved.
@@ -42,6 +42,9 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 
 		Tpm1Capability = (EFI_TCG_BOOT_SERVICE_CAPABILITY *)&TpmCapability;
 
+		Print(L"Structure Size: %d-byte\n",
+		      (UINT8)Tpm1Capability->Size);
+
 		Print(L"Structure Version: %d.%d (Rev %d.%d)\n",
 		      (UINT8)Tpm1Capability->StructureVersion.Major,
 		      (UINT8)Tpm1Capability->StructureVersion.Minor,
@@ -54,16 +57,23 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 		      (UINT8)Tpm1Capability->ProtocolVersion.RevMajor,
 		      (UINT8)Tpm1Capability->StructureVersion.RevMinor);
 
-		Print(L"Hash Algorithm Bitmap: 0x%x\n",
-		      (UINT8)Tpm1Capability->HashAlgorithmBitmap);
+		UINT8 Hash = (UINT8)Tpm1Capability->HashAlgorithmBitmap;
+		Print(L"Hash Algorithm Bitmap: 0x%x (%s%s)\n", Hash,
+		      Hash & EFI_TCG_BOOT_HASH_ALG_SHA1 ? L"SHA-1" : L"N/A",
+		      Hash != EFI_TCG_BOOT_HASH_ALG_SHA1 ? L", dirty" : L"");
 
-		Print(L"TPM Present: %d\n",
-		      (BOOLEAN)Tpm1Capability->TPMPresentFlag);
+		Print(L"TPM Present: %s\n",
+		      (BOOLEAN)Tpm1Capability->TPMPresentFlag ?
+			L"True" : L"False");
 
-		Print(L"TPM Deactivated: %d\n",
-		      (BOOLEAN)Tpm1Capability->TPMDeactivatedFlag);
+		Print(L"TPM Deactivated: %s\n",
+		      (BOOLEAN)Tpm1Capability->TPMDeactivatedFlag ?
+			L"True" : L"False");
 	} else if (TpmCapability->StructureVersion.Major == 1 &&
 			TpmCapability->StructureVersion.Minor == 1) {
+		Print(L"Structure Size: %d-byte\n",
+		      (UINT8)TpmCapability->Size);
+
 		Print(L"Structure Version: %d.%d\n",
 		      (UINT8)TpmCapability->StructureVersion.Major,
 		      (UINT8)TpmCapability->StructureVersion.Minor);
@@ -72,14 +82,29 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 		      (UINT8)TpmCapability->ProtocolVersion.Major,
 		      (UINT8)TpmCapability->StructureVersion.Minor);
 
-		Print(L"Hash Algorithm Bitmap: 0x%x\n",
-		      TpmCapability->HashAlgorithmBitmap);
+		UINT8 Hash = (UINT8)TpmCapability->HashAlgorithmBitmap;
+		Print(L"Supported Hash Algorithm Bitmap: 0x%x (%s%s%s%s%s%s)\n",
+		      Hash,
+		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA1 ? L"SHA-1" : L"",
+		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA256 ? L"SHA-256" : L"N/A",
+		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA384 ? L"SHA-384" : L"",
+		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA512 ? L"SHA-512" : L"N/A",
+		      Hash & EFI_TCG2_BOOT_HASH_ALG_SM3_256 ? L"SM3-256" : L"N/A",
+		      (Hash & ~EFI_TCG2_BOOT_HASH_ALG_MASK) || !Hash ?
+			L", dirty" : L"");
 
-		Print(L"Supported Event Logs: 0x%x\n",
-		      TpmCapability->SupportedEventLogs);
+		EFI_TCG2_EVENT_LOG_BITMAP Format = TpmCapability->SupportedEventLogs;
+		Print(L"Supported Event Log Format: 0x%x (%s%s%s)\n", Format,
+		      Format & EFI_TCG2_EVENT_LOG_FORMAT_TCG_1_2
+			? L"TCG1.2" : L"",
+		      Format & EFI_TCG2_EVENT_LOG_FORMAT_TCG_2
+			? L"TCG2.0" : L"",
+		      (Format & ~EFI_TCG2_EVENT_LOG_FORMAT_MASK) || !Format
+			? L", dirty" : L"");
 
-		Print(L"TPM Present: %d\n",
-		      (BOOLEAN)TpmCapability->TPMPresentFlag);
+		Print(L"TPM Present: %s\n",
+		      (BOOLEAN)TpmCapability->TPMPresentFlag ?
+			L"True" : L"False");
 
 		Print(L"Max Command Size: %d-byte\n",
 		      (UINT16)TpmCapability->MaxCommandSize);
@@ -90,11 +115,20 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 		Print(L"Manufacturer ID: 0x%x\n",
 		      TpmCapability->ManufacturerID);
 
-		Print(L"Number of Pcr Banks: %d\n",
-		      TpmCapability->NumberOfPcrBanks);
+		Print(L"Number of PCR Banks: %d%s\n",
+		      TpmCapability->NumberOfPcrBanks,
+		      !TpmCapability->NumberOfPcrBanks ? L"(dirty)" : L"");
 
-		Print(L"Active Pcr Banks: %d\n",
-		      TpmCapability->ActivePcrBanks);
+		EFI_TCG2_EVENT_ALGORITHM_BITMAP Bank = TpmCapability->ActivePcrBanks;
+		Print(L"Bitmap of Active PCR Banks: 0x%x (%s%s%s%s%s%s)\n",
+		      Bank,
+		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA1 ? L"SHA-1" : L"",
+		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA256 ? L"SHA-256" : L"N/A",
+		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA384 ? L"SHA-384" : L"",
+		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA512 ? L"SHA-512" : L"N/A",
+		      Bank & EFI_TCG2_BOOT_HASH_ALG_SM3_256 ? L"SM3-256" : L"N/A",
+		      (Bank & ~EFI_TCG2_BOOT_HASH_ALG_MASK) || !Bank ?
+			L", dirty" : L"");
 	} else {
 		Print(L"Unsupported structure version: %d.%d\n",
 		      (UINT8)TpmCapability->StructureVersion.Major,

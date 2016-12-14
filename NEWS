@@ -1,0 +1,7 @@
+Version 0.1.0
+=============
+Released: 2016-12-14
+
+- Provide tpm2-capability.efi to show the capability info for TPM 1.x/2.0
+  device.
+- Provide fake-etet to install a fake ETET for testing.

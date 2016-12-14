@@ -1,0 +1,15 @@
+efi-tpm2-utils
+==============
+
+This project provides the efi applications used to detect the TPM
+1.x/2.0 device and show the capability information.
+
+Build
+-----
+$ make
+
+Note: use "CROSS_COMPILE=" in command line to specify cross compilation.
+
+Installation
+------------
+$ sudo make install

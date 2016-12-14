@@ -1,7 +1,7 @@
 /*
  * The definitions for EFI TCG2 Protocol
  *
- * Copyright (c) 2016, Lans Zhang
+ * Copyright (c) 2016, Wind River Systems, Inc.
  * All rights reserved.
  *
  * See "LICENSE" for license terms.

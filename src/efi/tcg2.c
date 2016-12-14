@@ -1,7 +1,7 @@
 /*
  * EFI TCG2 common functions
  *
- * Copyright (c) 2016, Lans Zhang
+ * Copyright (c) 2016, Wind River Systems, Inc.
  * All rights reserved.
  *
  * See "LICENSE" for license terms.

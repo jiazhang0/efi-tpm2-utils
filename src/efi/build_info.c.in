@@ -1,0 +1,14 @@
+/*
+ * Build information
+ *
+ * Copyright (c) 2016, Wind River Systems, Inc.
+ * All rights reserved.
+ *
+ * See "LICENSE" for license terms.
+ *
+ * Author:
+ *     Lans Zhang <jia.zhang@windriver.com>
+ */
+
+const char *git_commit = "@@GIT_COMMIT@@";
+const char *build_machine = "@@BUILD_MACHINE@@";

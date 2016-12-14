@@ -33,6 +33,7 @@ LIB_NAME := libefitcg2
 LIB_TARGET := $(LIB_NAME).a
 
 OBJS_$(LIB_NAME) := \
+	build_info.o \
 	tcg2.o
 
 TARGETS = fake-etet.efi tpm2-capability.efi
@@ -46,7 +47,7 @@ all: $(TARGETS) Makefile
 
 clean:
 	$(RM) $(TARGETS) *.so *.debug $(FAKE_ETET_OBJS) \
-		$(TPM2_CAPABILITY_OBJS)
+		$(TPM2_CAPABILITY_OBJS) build_info.c
 	$(RM) $(LIB_TARGET) $(OBJS_$(LIB_NAME)) \
 		$(addsuffix .*, $(LIB_TARGET))
 
@@ -78,3 +79,7 @@ tpm2-capability.so: $(TPM2_CAPABILITY_OBJS) $(LIB_TARGET)
 		-j .dynamic -j .dynsym -j .rel* \
 		-j .rela* -j .reloc -j .eh_frame \
 		--target efi-app-$(EFI_ARCH) $^ $@
+
+build_info.c: build_info.c.in
+	sed -e "s~@@GIT_COMMIT@@~$(shell if [ -d $(TOPDIR)/.git ]; then git log -1 --pretty=format:%H | tr -d '\n'; elif [ -f $(TOPDIR)/commit ]; then cat $(TOPDIR)/commit | tr -d '\n'; else echo -n ???????; fi)~" \
+		-e "s~@@BUILD_MACHINE@@~$(shell whoami | tr -d '\n'; echo -n @; uname -a | tr -d '\n')~" < $^ > $@

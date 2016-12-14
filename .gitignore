@@ -1,3 +1,4 @@
+src/efi/build_info.c
 *.efi
 *.debug
 *.sh

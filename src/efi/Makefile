@@ -28,8 +28,9 @@ LDFLAGS += -nostdlib -shared -Bsymbolic -L$(gnuefi_libdir) \
 
 # TODO: __attribute__((ms_abi)) is only available since gcc 4.7
 
-TARGETS = fake-etet.efi
+TARGETS = fake-etet.efi tpm2-capability.efi
 FAKE_ETET_OBJS = fake-etet.o
+TPM2_CAPABILITY_OBJS = tpm2-capability.o
 
 .PHONE: all clean install
 
@@ -39,10 +40,13 @@ all: $(TARGETS)
 clean:
 	$(RM) $(TARGETS) *.so *.debug $(FAKE_ETET_OBJS)
 
-install: fake-etet.efi
-	cp -f fake-etet.efi $(EFI_DESTDIR)/fake-etet.efi
+install: fake-etet.efi tpm2-capability.efi
+	cp -f $^ $(EFI_DESTDIR)
 
 fake-etet.so: $(FAKE_ETET_OBJS)
+tpm2-capability.so: $(TPM2_CAPABILITY_OBJS)
+
+%.so: %.o
 	$(LD) $(LDFLAGS) -o $@ --start-group $^ $(shell $(CC) -print-libgcc-file-name) \
 -lgnuefi -lefi --end-group
 	@echo '--------------- List unresolved symbols ---------------'

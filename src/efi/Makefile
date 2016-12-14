@@ -37,8 +37,9 @@ OBJS_$(LIB_NAME) := \
 	tcg2.o \
 	etet.o
 
-TARGETS = fake-etet.efi tpm2-capability.efi
+TARGETS = fake-etet.efi dump-etet.efi tpm2-capability.efi
 FAKE_ETET_OBJS = fake-etet.o
+DUMP_ETET_OBJS = dump-etet.o
 TPM2_CAPABILITY_OBJS = tpm2-capability.o
 
 .PHONE: all clean install
@@ -48,7 +49,8 @@ all: $(TARGETS) Makefile
 
 clean:
 	$(RM) $(TARGETS) *.so *.debug $(FAKE_ETET_OBJS) \
-		$(TPM2_CAPABILITY_OBJS) build_info.c
+		$(DUMP_ETET_OBJS) $(TPM2_CAPABILITY_OBJS) \
+		build_info.c
 	$(RM) $(LIB_TARGET) $(OBJS_$(LIB_NAME)) \
 		$(addsuffix .*, $(LIB_TARGET))
 
@@ -59,6 +61,7 @@ $(LIB_NAME).a: $(OBJS_$(LIB_NAME))
 	$(AR) rcs $@ $^
 
 fake-etet.so: $(FAKE_ETET_OBJS) $(LIB_TARGET)
+dump-etet.so: $(DUMP_ETET_OBJS) $(LIB_TARGET)
 tpm2-capability.so: $(TPM2_CAPABILITY_OBJS) $(LIB_TARGET)
 
 %.so: %.o

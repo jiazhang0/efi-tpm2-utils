@@ -149,4 +149,11 @@ typedef struct tdEFI_TCG2_PROTOCOL {
 extern EFI_STATUS
 Tcg2LocateProtocol(EFI_TCG2_PROTOCOL **Tcg2);
 
+extern EFI_STATUS
+Tcg2DetectTPM(VOID);
+
+extern EFI_STATUS
+Tcg2GetCapability(EFI_TCG2_BOOT_SERVICE_CAPABILITY *Capability,
+		  UINT8 *Size);
+
 #endif	/* TCG2_H */

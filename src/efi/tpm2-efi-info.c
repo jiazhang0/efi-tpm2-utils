@@ -16,17 +16,31 @@
 #include <tcg2.h>
 #include <etet.h>
 
+STATIC VOID
+DetectETET(VOID)
+{
+	VOID *Table;
+	EFI_STATUS Status = EtetLocateAddress(&Table);
+
+	if (!EFI_ERROR(Status))
+		Print(L"ETET is detected\n");
+}
+
 EFI_STATUS
 efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 {
+	EFI_STATUS Status;
+
 	InitializeLib(ImageHandle, Systab);
 
 	EFI_TCG2_PROTOCOL *Tcg2;
-	Tcg2LocateProtocol(&Tcg2);
+	Status = Tcg2LocateProtocol(&Tcg2);
+	if (EFI_ERROR(Status))
+		goto next;
+
+	Print(L"EFI TCG2 protocol is installed\n");
 
 	UINT8 TpmCapabilitySize = 0;
-	EFI_STATUS Status;
-
 	Status = Tcg2GetCapability(NULL, &TpmCapabilitySize);
 	if (EFI_ERROR(Status))
 		return Status;
@@ -64,10 +78,8 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 			      L"%d.%d\n", Major, Minor);
 	}
 
-	VOID *Table;
-	Status = EtetLocateAddress(&Table);
-	if (!EFI_ERROR(Status))
-		Print(L"ETET is detected\n");
+next:
+	DetectETET();
 
 	return EFI_SUCCESS;
 }

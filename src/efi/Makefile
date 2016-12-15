@@ -37,10 +37,16 @@ OBJS_$(LIB_NAME) := \
 	tcg2.o \
 	etet.o
 
-TARGETS = fake-etet.efi dump-etet.efi tpm2-capability.efi
+TARGETS = \
+	fake-etet.efi \
+	dump-etet.efi \
+	tpm2-capability.efi \
+	tpm2-eventlog.efi
+
 FAKE_ETET_OBJS = fake-etet.o
 DUMP_ETET_OBJS = dump-etet.o
 TPM2_CAPABILITY_OBJS = tpm2-capability.o
+TPM2_EVENTLOG_OBJS = tpm2-eventlog.o
 
 .PHONE: all clean install
 
@@ -50,7 +56,7 @@ all: $(TARGETS) Makefile
 clean:
 	$(RM) $(TARGETS) *.so *.debug $(FAKE_ETET_OBJS) \
 		$(DUMP_ETET_OBJS) $(TPM2_CAPABILITY_OBJS) \
-		build_info.c
+		$(TPM2_EVENTLOG_OBJS) build_info.c
 	$(RM) $(LIB_TARGET) $(OBJS_$(LIB_NAME)) \
 		$(addsuffix .*, $(LIB_TARGET))
 
@@ -63,6 +69,7 @@ $(LIB_NAME).a: $(OBJS_$(LIB_NAME))
 fake-etet.so: $(FAKE_ETET_OBJS) $(LIB_TARGET)
 dump-etet.so: $(DUMP_ETET_OBJS) $(LIB_TARGET)
 tpm2-capability.so: $(TPM2_CAPABILITY_OBJS) $(LIB_TARGET)
+tpm2-eventlog.so: $(TPM2_EVENTLOG_OBJS) $(LIB_TARGET)
 
 %.so: %.o
 	$(LD) $(LDFLAGS) -o $@ --start-group $^ $(shell $(CC) -print-libgcc-file-name) \

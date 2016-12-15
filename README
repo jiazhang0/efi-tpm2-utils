@@ -44,3 +44,38 @@ Max Response Size: 3968-byte
 Manufacturer ID: 0x494E5443
 Number of PCR Banks: 2
 Active PCR Banks: 0x1 (SHA-1)
+
+* tpm2-eventlog.efi
+Show the content of normal event logs.
+
+Usage:
+tpm2-eventlog.efi
+
+Example:
+TCG 1.2 Normal Event Logs:
+[01]
+  PCR Index: 0
+  Event Type: 0x8 (S-CRTM version)
+  Digest: C42FEDAD268200CB1D15F97841C344E79DAE3320
+  Event Size: 16-byte
+  Event Data:
+    1EFB6B540C1D5540A4AD4EF4BF17B83A
+[02]
+  PCR Index: 0
+  Event Type: 0x1 (Post code)
+  Digest: 81AA09B1BAD84B72E3103B7169F02A667D833C45
+  Event Size: 16-byte
+  Event Data:
+    0010B4FF000000000070400000000000
+[03]
+  PCR Index: 7
+  Event Type: 0x80000001 (EFI variable driver config)
+  Digest: 2F20112A3F55398B208E0C42681389B4CB5B1823
+  Event Size: 52-byte
+  Event Data:
+    Variable name: Efi
+    Unicode name length: 20-byte
+    Variable data length: 0-byte
+    Unicode name: SecureBoot
+    Variable data:
+...omitted

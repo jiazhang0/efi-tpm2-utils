@@ -54,6 +54,16 @@ union EFI_TCG2_FINAL_EVENTS_TABLE_UNION {
 	EFI_TCG2_FINAL_EVENTS_TABLE v1;
 };
 
+typedef UINT8				TCG_DIGEST[20];
+
+typedef struct {
+	TCG_PCRINDEX PCRIndex;
+	TCG_EVENTTYPE EventType;
+	TCG_DIGEST Digest;
+	UINT32 EventSize;
+	UINT8 Event[0];
+} TCG_PCR_EVENT;
+
 #pragma pack()
 
 extern EFI_STATUS

@@ -66,23 +66,40 @@ typedef struct {
 	EFI_TCG2_EVENT_ALGORITHM_BITMAP ActivePcrBanks;
 } EFI_TCG2_BOOT_SERVICE_CAPABILITY;
 
+/* The definitions for Trusted Execution Environment (TrEE) */
+
 typedef struct {
 	UINT8 Major;
 	UINT8 Minor;
-	UINT8 RevMajor;
-	UINT8 RevMinor;
-} EFI_TCG_VERSION;
+} TREE_VERSION;
 
-#define EFI_TCG_BOOT_HASH_ALG_SHA1 		0x00000001
+#define TREE_BOOT_HASH_ALG_SHA1 		0x00000001
+#define TREE_BOOT_HASH_ALG_SHA256		0x00000002
+#define TREE_BOOT_HASH_ALG_SHA384		0x00000004
+#define TREE_BOOT_HASH_ALG_SHA512		0x00000008
+#define TREE_BOOT_HASH_ALG_MASK			\
+	(TREE_BOOT_HASH_ALG_SHA1 |	\
+	 TREE_BOOT_HASH_ALG_SHA256 |	\
+	 TREE_BOOT_HASH_ALG_SHA384 |	\
+	 TREE_BOOT_HASH_ALG_SHA512)
+
+typedef UINT32					TREE_EVENT_LOG_BITMAP;
+typedef UINT32					TREE_EVENT_LOG_FORMAT;
+
+#define TREE_EVENT_LOG_FORMAT_TCG_1_2		0x00000001
+#define TREE_EVENT_LOG_FORMAT_MASK		TREE_EVENT_LOG_FORMAT_TCG_1_2
 
 typedef struct {
 	UINT8 Size;
-	EFI_TCG_VERSION StructureVersion;
-	EFI_TCG_VERSION ProtocolSpecVersion;
-	UINT8 HashAlgorithmBitmap;
-	BOOLEAN TPMPresentFlag;
-	BOOLEAN TPMDeactivatedFlag;
-} EFI_TCG_BOOT_SERVICE_CAPABILITY;
+	TREE_VERSION StructureVersion;
+	TREE_VERSION ProtocolVersion;
+	UINT32 HashAlgorithmBitmap;
+	TREE_EVENT_LOG_BITMAP SupportedEventLogs;
+	BOOLEAN TrEEPresentFlag;
+	UINT16 MaxCommandSize;
+	UINT16 MaxResponseSize;
+	UINT32 ManufacturerID;
+} TREE_BOOT_SERVICE_CAPABILITY;
 
 #pragma pack(1)
 

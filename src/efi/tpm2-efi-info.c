@@ -23,14 +23,7 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 
 	EFI_TCG2_PROTOCOL *Tcg2;
 	Tcg2LocateProtocol(&Tcg2);
-#if 0
-	EFI_TCG2_BOOT_SERVICE_CAPABILITY TpmCapability;
-	UINT8 TpmCapabilitySize = sizeof(TpmCapability);
-	EFI_STATUS Status;
 
-	Status = Tcg2GetCapability(&TpmCapability,
-				   &TpmCapabilitySize);
-#else
 	UINT8 TpmCapabilitySize = 0;
 	EFI_STATUS Status;
 
@@ -44,26 +37,23 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 		return Status;
 
 	Status = Tcg2GetCapability(TpmCapability, &TpmCapabilitySize);
-	if (EFI_ERROR(Status))
-		return Status;	
-#endif
+	if (EFI_ERROR(Status)) {
+		FreePool(TpmCapability);
+		return Status;
+	}
+
 	if (!EFI_ERROR(Status)) {
 		UINT8 Major = TpmCapability->StructureVersion.Major;
 		UINT8 Minor = TpmCapability->StructureVersion.Minor;
 
 		if (Major == 1 && Minor == 0) {
-			EFI_TCG_BOOT_SERVICE_CAPABILITY *Tpm1Capability;
+			TREE_BOOT_SERVICE_CAPABILITY *TrEECapability;
 
-			Tpm1Capability = (EFI_TCG_BOOT_SERVICE_CAPABILITY *)TpmCapability;
-			if (Tpm1Capability->TPMPresentFlag) {
-				Print(L"TPM 1.x device is present and ");
-
-				if (Tpm1Capability->TPMDeactivatedFlag)
-					Print(L"deactivated\n");
-				else
-					Print(L"activated\n");
-			} else
-				Print(L"TPM 1.x device is absent\n");			
+			TrEECapability = (TREE_BOOT_SERVICE_CAPABILITY *)TpmCapability;
+			if (TrEECapability->TrEEPresentFlag)
+				Print(L"TPM 2.0 (TrEE) device is present\n");
+			else
+				Print(L"TPM 2.0 (TrEE) device is absent\n");
 		} else if (Major == 1 && Minor == 1) {
 			if (TpmCapability->TPMPresentFlag)
 				Print(L"TPM 2.0 device is present\n");

@@ -58,9 +58,9 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 		      (UINT8)Tpm1Capability->StructureVersion.RevMinor);
 
 		UINT8 Hash = (UINT8)Tpm1Capability->HashAlgorithmBitmap;
-		Print(L"Hash Algorithm Bitmap: 0x%x (%s%s)\n", Hash,
-		      Hash & EFI_TCG_BOOT_HASH_ALG_SHA1 ? L"SHA-1" : L"N/A",
-		      Hash != EFI_TCG_BOOT_HASH_ALG_SHA1 ? L", dirty" : L"");
+		Print(L"Supported Hash Algorithm: 0x%x (%s%s)\n", Hash,
+		      Hash & EFI_TCG_BOOT_HASH_ALG_SHA1 ? L"SHA-1" : L"",
+		      Hash != EFI_TCG_BOOT_HASH_ALG_SHA1 ? L" dirty" : L"");
 
 		Print(L"TPM Present: %s\n",
 		      (BOOLEAN)Tpm1Capability->TPMPresentFlag ?
@@ -83,24 +83,24 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 		      (UINT8)TpmCapability->StructureVersion.Minor);
 
 		UINT8 Hash = (UINT8)TpmCapability->HashAlgorithmBitmap;
-		Print(L"Supported Hash Algorithm Bitmap: 0x%x (%s%s%s%s%s%s)\n",
+		Print(L"Supported Hash Algorithm: 0x%x (%s%s%s%s%s%s)\n",
 		      Hash,
 		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA1 ? L"SHA-1" : L"",
-		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA256 ? L"SHA-256" : L"N/A",
-		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA384 ? L"SHA-384" : L"",
-		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA512 ? L"SHA-512" : L"N/A",
-		      Hash & EFI_TCG2_BOOT_HASH_ALG_SM3_256 ? L"SM3-256" : L"N/A",
+		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA256 ? L" SHA-256" : L"",
+		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA384 ? L" SHA-384" : L"",
+		      Hash & EFI_TCG2_BOOT_HASH_ALG_SHA512 ? L" SHA-512" : L"",
+		      Hash & EFI_TCG2_BOOT_HASH_ALG_SM3_256 ? L" SM3-256" : L"",
 		      (Hash & ~EFI_TCG2_BOOT_HASH_ALG_MASK) || !Hash ?
-			L", dirty" : L"");
+			L" dirty" : L"");
 
 		EFI_TCG2_EVENT_LOG_BITMAP Format = TpmCapability->SupportedEventLogs;
 		Print(L"Supported Event Log Format: 0x%x (%s%s%s)\n", Format,
 		      Format & EFI_TCG2_EVENT_LOG_FORMAT_TCG_1_2
 			? L"TCG1.2" : L"",
 		      Format & EFI_TCG2_EVENT_LOG_FORMAT_TCG_2
-			? L"TCG2.0" : L"",
+			? L" TCG2.0" : L"",
 		      (Format & ~EFI_TCG2_EVENT_LOG_FORMAT_MASK) || !Format
-			? L", dirty" : L"");
+			? L" dirty" : L"");
 
 		Print(L"TPM Present: %s\n",
 		      (BOOLEAN)TpmCapability->TPMPresentFlag ?
@@ -120,15 +120,15 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 		      !TpmCapability->NumberOfPcrBanks ? L"(dirty)" : L"");
 
 		EFI_TCG2_EVENT_ALGORITHM_BITMAP Bank = TpmCapability->ActivePcrBanks;
-		Print(L"Bitmap of Active PCR Banks: 0x%x (%s%s%s%s%s%s)\n",
+		Print(L"Active PCR Banks: 0x%x (%s%s%s%s%s%s)\n",
 		      Bank,
 		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA1 ? L"SHA-1" : L"",
-		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA256 ? L"SHA-256" : L"N/A",
-		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA384 ? L"SHA-384" : L"",
-		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA512 ? L"SHA-512" : L"N/A",
-		      Bank & EFI_TCG2_BOOT_HASH_ALG_SM3_256 ? L"SM3-256" : L"N/A",
+		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA256 ? L" SHA-256" : L"",
+		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA384 ? L" SHA-384" : L"",
+		      Bank & EFI_TCG2_BOOT_HASH_ALG_SHA512 ? L" SHA-512" : L"",
+		      Bank & EFI_TCG2_BOOT_HASH_ALG_SM3_256 ? L" SM3-256" : L"",
 		      (Bank & ~EFI_TCG2_BOOT_HASH_ALG_MASK) || !Bank ?
-			L", dirty" : L"");
+			L" dirty" : L"");
 	} else {
 		Print(L"Unsupported structure version: %d.%d\n",
 		      (UINT8)TpmCapability->StructureVersion.Major,

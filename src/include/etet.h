@@ -57,7 +57,7 @@ typedef struct {
 	UINT8 uintnSize;
 	/* Added since "Spec ID Event03" */
 	UINT32 numberOfAlgorithms;
-	TCG_EfiSpecIdEventAlgorithmSize digestSize[0];
+	TCG_EfiSpecIdEventAlgorithmSize digestSizes[0];
 	//UINT8 vendorInfoSize;
 	//UINT8 vendorInfo[vendorInfoSize];
  } TCG_EfiSpecIDEventStruct;

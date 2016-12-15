@@ -78,7 +78,7 @@ typedef struct {
 typedef struct {
 	UINT8 Size;
 	EFI_TCG_VERSION StructureVersion;
-	EFI_TCG_VERSION ProtocolVersion;
+	EFI_TCG_VERSION ProtocolSpecVersion;
 	UINT8 HashAlgorithmBitmap;
 	BOOLEAN TPMPresentFlag;
 	BOOLEAN TPMDeactivatedFlag;
@@ -192,10 +192,7 @@ extern EFI_STATUS
 Tcg2LocateProtocol(EFI_TCG2_PROTOCOL **Tcg2);
 
 extern EFI_STATUS
-Tcg2DetectTPM(VOID);
-
-extern EFI_STATUS
 Tcg2GetCapability(EFI_TCG2_BOOT_SERVICE_CAPABILITY *Capability,
-		  UINT8 *Size);
+		  UINT8 *CapabilitySize);
 
 #endif	/* TCG2_H */

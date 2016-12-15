@@ -40,11 +40,13 @@ OBJS_$(LIB_NAME) := \
 TARGETS = \
 	fake-etet.efi \
 	dump-etet.efi \
+	tpm2-efi-info.efi \
 	tpm2-capability.efi \
 	tpm2-eventlog.efi
 
 FAKE_ETET_OBJS = fake-etet.o
 DUMP_ETET_OBJS = dump-etet.o
+TPM2_EFI_INFO_OBJS = tpm2-efi-info.o
 TPM2_CAPABILITY_OBJS = tpm2-capability.o
 TPM2_EVENTLOG_OBJS = tpm2-eventlog.o
 
@@ -55,8 +57,9 @@ all: $(TARGETS) Makefile
 
 clean:
 	$(RM) $(TARGETS) *.so *.debug $(FAKE_ETET_OBJS) \
-		$(DUMP_ETET_OBJS) $(TPM2_CAPABILITY_OBJS) \
-		$(TPM2_EVENTLOG_OBJS) build_info.c
+		$(DUMP_ETET_OBJS) $(TPM2_EFI_INFO_OBJS) \
+		$(TPM2_CAPABILITY_OBJS) $(TPM2_EVENTLOG_OBJS) \
+		build_info.c
 	$(RM) $(LIB_TARGET) $(OBJS_$(LIB_NAME)) \
 		$(addsuffix .*, $(LIB_TARGET))
 
@@ -68,6 +71,7 @@ $(LIB_NAME).a: $(OBJS_$(LIB_NAME))
 
 fake-etet.so: $(FAKE_ETET_OBJS) $(LIB_TARGET)
 dump-etet.so: $(DUMP_ETET_OBJS) $(LIB_TARGET)
+tpm2-efi-info.so: $(TPM2_EFI_INFO_OBJS) $(LIB_TARGET)
 tpm2-capability.so: $(TPM2_CAPABILITY_OBJS) $(LIB_TARGET)
 tpm2-eventlog.so: $(TPM2_EVENTLOG_OBJS) $(LIB_TARGET)
 

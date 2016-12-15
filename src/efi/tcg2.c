@@ -46,14 +46,13 @@ Tcg2GetCapability(EFI_TCG2_BOOT_SERVICE_CAPABILITY *Capability,
 
 	EFI_TCG2_BOOT_SERVICE_CAPABILITY TpmCapability;
 
-	if (!*CapabilitySize) {
-		TpmCapability.Size = (UINT8)sizeof(TpmCapability);
-		Capability = &TpmCapability;
-	} else
-		Capability->Size = *CapabilitySize;
+	if (!*CapabilitySize)
+		TpmCapability.Size = sizeof(TpmCapability);
+	else
+		TpmCapability.Size = *CapabilitySize;
 
 	Status = uefi_call_wrapper(Tcg2->GetCapability, 2, Tcg2,
-				   Capability);
+				   &TpmCapability);
 	if (EFI_ERROR(Status)) {
 		Print(L"Unable to get the TPM capability: %r\n", Status);
 		if (Status == EFI_BUFFER_TOO_SMALL)
@@ -63,7 +62,15 @@ Tcg2GetCapability(EFI_TCG2_BOOT_SERVICE_CAPABILITY *Capability,
 	}
 
 	if (!*CapabilitySize)
-		*CapabilitySize = Capability->Size;
+		*CapabilitySize = TpmCapability.Size;
+	else if (Capability) {
+		UINTN CopySize = TpmCapability.Size;
+
+		if (*CapabilitySize < CopySize)
+			CopySize = *CapabilitySize;
+
+		CopyMem(Capability, &TpmCapability, CopySize);
+	}
 
 	return Status;
 }

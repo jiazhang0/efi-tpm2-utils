@@ -15,26 +15,6 @@
 
 #include <etet.h>
 
-#pragma pack(1)
-
-typedef struct {
-	EFI_GUID VariableName;
-	UINT64 UnicodeNameLength;
-	UINT64 VariableDataLength;
-	CHAR16 UnicodeName[1];
-	INT8 VariableData[1];
-} EFI_VARIABLE_DATA_TREE;
-
-typedef struct {
-	EFI_PHYSICAL_ADDRESS ImageLocationInMemory;
-	UINTN ImageLengthInMemory;
-	UINTN ImageLinkTimeAddress;
-	INTN LengthOfDevicePath;
-	EFI_DEVICE_PATH DevicePath[0];
-} EFI_IMAGE_LOAD_EVENT;
-
-#pragma pack()
-
 STATIC EFI_TCG2_BOOT_SERVICE_CAPABILITY *
 GetCapability(VOID)
 {

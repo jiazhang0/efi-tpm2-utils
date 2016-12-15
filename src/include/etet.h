@@ -26,6 +26,10 @@
 
 #define EFI_TCG2_FINAL_EVENTS_TABLE_VERSION	1
 
+/*
+ * The definitions for TCG 2.0
+ */
+
 typedef struct {
 	UINT16 AlgorithmId;
 	UINT8 Digest[];
@@ -35,6 +39,28 @@ typedef struct {
 	UINT32 Count;
 	TPMT_HA Digests[];
 } TPML_DIGEST_VALUES;
+
+typedef struct {
+	UINT16 algorithmId;
+	UINT16 digestSize;
+} TCG_EfiSpecIdEventAlgorithmSize;
+
+/*
+ * The definition for event log header
+ */
+typedef struct {
+	UINT8 signature[16];
+	UINT32 platformClass;
+	UINT8 specVersionMinor;
+	UINT8 specVersionMajor;
+	UINT8 specErrata;
+	UINT8 uintnSize;
+	/* Added since "Spec ID Event03" */
+	UINT32 numberOfAlgorithms;
+	TCG_EfiSpecIdEventAlgorithmSize digestSize[0];
+	//UINT8 vendorInfoSize;
+	//UINT8 vendorInfo[vendorInfoSize];
+ } TCG_EfiSpecIDEventStruct;
 
 typedef struct {
 	TCG_PCRINDEX PCRIndex;
@@ -50,9 +76,9 @@ typedef struct {
 	TCG_PCR_EVENT2 Event[];
 } EFI_TCG2_FINAL_EVENTS_TABLE;
 
-union EFI_TCG2_FINAL_EVENTS_TABLE_UNION {
-	EFI_TCG2_FINAL_EVENTS_TABLE v1;
-};
+/*
+ * The definitions for TCG 1.x
+ */
 
 typedef UINT8				TCG_DIGEST[20];
 
@@ -61,8 +87,32 @@ typedef struct {
 	TCG_EVENTTYPE EventType;
 	TCG_DIGEST Digest;
 	UINT32 EventSize;
-	UINT8 Event[0];
+	UINT8 Event[];
 } TCG_PCR_EVENT;
+
+union EFI_TCG2_FINAL_EVENTS_TABLE_UNION {
+	EFI_TCG2_FINAL_EVENTS_TABLE v1;
+};
+
+/*
+ * Common definitions for the event data
+ */
+
+typedef struct {
+	EFI_GUID VariableName;
+	UINT64 UnicodeNameLength;
+	UINT64 VariableDataLength;
+	CHAR16 UnicodeName[1];
+	INT8 VariableData[1];
+} EFI_VARIABLE_DATA_TREE;
+
+typedef struct {
+	EFI_PHYSICAL_ADDRESS ImageLocationInMemory;
+	UINTN ImageLengthInMemory;
+	UINTN ImageLinkTimeAddress;
+	INTN LengthOfDevicePath;
+	EFI_DEVICE_PATH DevicePath[0];
+} EFI_IMAGE_LOAD_EVENT;
 
 #pragma pack()
 

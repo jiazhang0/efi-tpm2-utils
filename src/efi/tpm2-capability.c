@@ -20,10 +20,10 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 {
 	InitializeLib(ImageHandle, Systab);
 
-	UINTN TpmCapabilitySize = 0;
+	UINT8 TpmCapabilitySize = 0;
 	EFI_STATUS Status;
 
-	Status = Tcg2GetCapability(NULL, (UINT8 *)&TpmCapabilitySize);
+	Status = Tcg2GetCapability(NULL, &TpmCapabilitySize);
 	if (EFI_ERROR(Status))
 		return Status;
 
@@ -32,7 +32,7 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 	if (!TpmCapability)
 		return Status;
 
-	Status = Tcg2GetCapability(TpmCapability, (UINT8 *)&TpmCapabilitySize);
+	Status = Tcg2GetCapability(TpmCapability, &TpmCapabilitySize);
 	if (EFI_ERROR(Status))
 		goto out;
 
@@ -51,11 +51,11 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 		      (UINT8)Tpm1Capability->StructureVersion.RevMajor,
 		      (UINT8)Tpm1Capability->StructureVersion.RevMinor);
 
-		Print(L"Protocol Version: %d.%d (Rev %d.%d)\n",
-		      (UINT8)Tpm1Capability->ProtocolVersion.Major,
-		      (UINT8)Tpm1Capability->StructureVersion.Minor,
-		      (UINT8)Tpm1Capability->ProtocolVersion.RevMajor,
-		      (UINT8)Tpm1Capability->StructureVersion.RevMinor);
+		Print(L"Protocol Spec Version: %d.%d (Rev %d.%d)\n",
+		      (UINT8)Tpm1Capability->ProtocolSpecVersion.Major,
+		      (UINT8)Tpm1Capability->ProtocolSpecVersion.Minor,
+		      (UINT8)Tpm1Capability->ProtocolSpecVersion.RevMajor,
+		      (UINT8)Tpm1Capability->ProtocolSpecVersion.RevMinor);
 
 		UINT8 Hash = (UINT8)Tpm1Capability->HashAlgorithmBitmap;
 		Print(L"Supported Hash Algorithm: 0x%x (%s%s)\n", Hash,
@@ -80,7 +80,7 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 
 		Print(L"Protocol Version: %d.%d\n",
 		      (UINT8)TpmCapability->ProtocolVersion.Major,
-		      (UINT8)TpmCapability->StructureVersion.Minor);
+		      (UINT8)TpmCapability->ProtocolVersion.Minor);
 
 		UINT8 Hash = (UINT8)TpmCapability->HashAlgorithmBitmap;
 		Print(L"Supported Hash Algorithm: 0x%x (%s%s%s%s%s%s)\n",

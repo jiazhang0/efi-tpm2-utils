@@ -1,8 +1,7 @@
 efi-tpm2-utils
 ==============
 
-This project provides the efi applications used to detect the TPM
-1.x/2.0 device and show the capability information.
+This project provides various TPM 2.0 applications running in EFI.
 
 Build
 -----
@@ -13,3 +12,35 @@ Note: use "CROSS_COMPILE=" in command line to specify cross compilation.
 Installation
 ------------
 $ sudo make install
+
+Tools
+-----
+* fake-etet.efi
+Install a fake ETET if UEFI BIOS doesn't have.
+
+Usage:
+fake-etet.efi
+
+Example:
+ETET (version 1, number of events 0) detected
+Skip to install a fake ETET
+ETET triggered
+
+* tpm2-capability.efi
+Show the capability information of TPM 1.x/2.0 device.
+
+Usage:
+tpm2-capability.efi
+
+Example:
+Structure Size: 36-byte
+Structure Version: 1.1
+Protocol Version: 1.1
+Supported Hash Algorithm: 0x3 (SHA-1 SHA-256)
+Supported Event Log Format: 0x3 (TCG1.2 TCG2.0)
+TPM Present: True
+Max Command Size: 3968-byte
+Max Response Size: 3968-byte
+Manufacturer ID: 0x494E5443
+Number of PCR Banks: 2
+Active PCR Banks: 0x1 (SHA-1)

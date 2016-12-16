@@ -16,6 +16,49 @@
 #include <efi.h>
 #include <efilib.h>
 
+/* The definitions for TCG Spec */
+
+typedef UINT16			TPM_ALG_ID;
+typedef TPM_ALG_ID		TPMI_ALG_HASH;
+
+#define TPM_ALG_SHA1 		(TPM_ALG_ID)(0x0004)
+#define TPM_ALG_AES 		(TPM_ALG_ID)(0x0006)
+#define TPM_ALG_KEYEDHASH	(TPM_ALG_ID)(0x0008)
+#define TPM_ALG_SHA256		(TPM_ALG_ID)(0x000B)
+#define TPM_ALG_SHA384		(TPM_ALG_ID)(0x000C)
+#define TPM_ALG_SHA512		(TPM_ALG_ID)(0x000D)
+#define TPM_ALG_NULL		(TPM_ALG_ID)(0x0010)
+#define TPM_ALG_SM3_256		(TPM_ALG_ID)(0x0012)
+#define TPM_ALG_SM4		(TPM_ALG_ID)(0x0013)
+#define TPM_ALG_RSASSA		(TPM_ALG_ID)(0x0014)
+#define TPM_ALG_RSAES		(TPM_ALG_ID)(0x0015)
+#define TPM_ALG_RSAPSS		(TPM_ALG_ID)(0x0016)
+#define TPM_ALG_OAEP		(TPM_ALG_ID)(0x0017)
+#define TPM_ALG_ECDSA		(TPM_ALG_ID)(0x0018)
+#define TPM_ALG_ECDH		(TPM_ALG_ID)(0x0019)
+#define TPM_ALG_ECDAA		(TPM_ALG_ID)(0x001A)
+#define TPM_ALG_SM2		(TPM_ALG_ID)(0x001B)
+#define TPM_ALG_ECSCHNORR	(TPM_ALG_ID)(0x001C)
+#define TPM_ALG_ECMQV		(TPM_ALG_ID)(0x001D)
+#define TPM_ALG_KDF1_SP800_56a	(TPM_ALG_ID)(0x0020)
+#define TPM_ALG_KDF2		(TPM_ALG_ID)(0x0021)
+#define TPM_ALG_KDF1_SP800_108	(TPM_ALG_ID)(0x0022)
+#define TPM_ALG_ECC 		(TPM_ALG_ID)(0x0023)
+#define TPM_ALG_SYMCIPHER	(TPM_ALG_ID)(0x0025)
+#define TPM_ALG_CTR		(TPM_ALG_ID)(0x0040)
+#define TPM_ALG_OFB		(TPM_ALG_ID)(0x0041)
+#define TPM_ALG_CBC		(TPM_ALG_ID)(0x0042)
+#define TPM_ALG_CFB		(TPM_ALG_ID)(0x0043)
+#define TPM_ALG_ECB		(TPM_ALG_ID)(0x0044)
+
+#define SHA1_DIGEST_SIZE 	20
+#define SHA256_DIGEST_SIZE	32
+#define SHA384_DIGEST_SIZE	48
+#define SHA512_DIGEST_SIZE	64
+#define SM3_256_DIGEST_SIZE	32
+
+/* The definitions for EFI TCG2 Protocol */
+
 #define EFI_TCG2_PROTOCOL_GUID	\
 	{ 0x607f766c, 0x7455, 0x42be,	\
 	{ 0x93, 0x0b, 0xe4, 0xd7, 0x6d, 0xb2, 0x72, 0x0f } }

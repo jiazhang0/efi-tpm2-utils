@@ -45,6 +45,9 @@ typedef struct {
 	UINT16 digestSize;
 } TCG_EfiSpecIdEventAlgorithmSize;
 
+#define TCG_PLATFORM_TYPE_CLIENT		0
+#define TCG_PLATFORM_TYPE_SERVER		1
+
 /*
  * The definition for event log header
  */

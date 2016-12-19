@@ -49,7 +49,7 @@ GetActivePcrBanks(EFI_TCG2_BOOT_SERVICE_CAPABILITY *TpmCapability)
 		TREE_BOOT_SERVICE_CAPABILITY *TrEECapability;
 
 		TrEECapability = (TREE_BOOT_SERVICE_CAPABILITY *)&TpmCapability;
-		Banks = TrEECapability->HashAlgorithmBitmap & TREE_EVENT_LOG_FORMAT_TCG_1_2;
+		Banks = TrEECapability->HashAlgorithmBitmap & TREE_BOOT_HASH_ALG_MASK;
 	} else if (TpmCapability->StructureVersion.Major == 1 &&
 			TpmCapability->StructureVersion.Minor == 1)
 		Banks = TpmCapability->ActivePcrBanks & EFI_TCG2_BOOT_HASH_ALG_MASK;
@@ -67,9 +67,12 @@ GetSupportedEventLogFormat(EFI_TCG2_BOOT_SERVICE_CAPABILITY *TpmCapability)
 	EFI_TCG2_EVENT_LOG_BITMAP Format = 0;
 
 	if (TpmCapability->StructureVersion.Major == 1 &&
-			TpmCapability->StructureVersion.Minor == 0)
-		Format = EFI_TCG2_EVENT_LOG_FORMAT_TCG_1_2;
-	else if (TpmCapability->StructureVersion.Major == 1 &&
+			TpmCapability->StructureVersion.Minor == 0) {
+		TREE_BOOT_SERVICE_CAPABILITY *TrEECapability;
+
+		TrEECapability = (TREE_BOOT_SERVICE_CAPABILITY *)TpmCapability;
+		Format = TrEECapability->SupportedEventLogs & TREE_BOOT_HASH_ALG_MASK;
+	} else if (TpmCapability->StructureVersion.Major == 1 &&
 			TpmCapability->StructureVersion.Minor == 1)
 		Format = TpmCapability->SupportedEventLogs & EFI_TCG2_EVENT_LOG_FORMAT_MASK;
 	else
@@ -541,12 +544,12 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Systab)
 		return Status;
 
 	EFI_TCG2_EVENT_LOG_BITMAP FormatList[] = {
-		//EFI_TCG2_EVENT_LOG_FORMAT_TCG_1_2,
+		EFI_TCG2_EVENT_LOG_FORMAT_TCG_1_2,
 		EFI_TCG2_EVENT_LOG_FORMAT_TCG_2,
 	};
 	for (UINTN Index = 0;
-		Index < sizeof(FormatList) / sizeof(EFI_TCG2_EVENT_LOG_BITMAP);
-		++Index) {
+	     Index < sizeof(FormatList) / sizeof(EFI_TCG2_EVENT_LOG_BITMAP);
+	     ++Index) {
 		if (!(SupportedFormats & FormatList[Index]))
 			continue;
 

@@ -234,10 +234,12 @@ ShowImageLog(VOID *Binary, UINT32 BinarySize)
 	Print(L"    Device path length: %d-byte\n",
 	      ImageLog->LengthOfDevicePath);
 
-	Print(L"    Device path:\n");
-	Print(L"      ");
-	Print(DevicePathToStr(ImageLog->DevicePath));
-	Print(L"\n");
+	if (ImageLog->LengthOfDevicePath) {
+		Print(L"    Device path:\n");
+		Print(L"      ");
+		Print(DevicePathToStr(ImageLog->DevicePath));
+		Print(L"\n");
+	}
 }
 
 STATIC VOID

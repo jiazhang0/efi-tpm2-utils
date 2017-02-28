@@ -3,10 +3,12 @@ include $(TOPDIR)/rules.mk
 
 EFI_ARCH = $(shell $(CC) -dumpmachine | cut -f1 -d- | sed s,i[3456789]86,ia32,)
 
+# XXX: __attribute__((ms_abi)) is only available since gcc 4.7
 CFLAGS += -mno-mmx -mno-sse -maccumulate-outgoing-args \
-	  -fpic -fno-stack-protector -fno-stack-check \
-	  -fno-merge-constants -ffreestanding -fshort-wchar \
-	  -fno-builtin -nostdinc \
+	  -fno-merge-constants -fno-strict-aliasing \
+	  -ffreestanding -fshort-wchar \
+	  -fno-stack-protector -fno-stack-check \
+	  -fpic -fno-builtin -nostdinc \
 	  $(addprefix -I, $(TOPDIR)/src/include $(gnuefi_includedir) \
 	  $(shell $(CC) -print-file-name=include)) \
 	  -DCONFIG_$(EFI_ARCH) -DGNU_EFI_USE_MS_ABI \
@@ -25,8 +27,6 @@ endif
 LDFLAGS += -nostdlib -shared -Bsymbolic -L$(gnuefi_libdir) \
 	   -T elf_$(EFI_ARCH)_efi.lds $(gnuefi_libdir)/crt0-efi-$(EFI_ARCH).o \
 	   $(EXTRA_LDFLAGS)
-
-# TODO: __attribute__((ms_abi)) is only available since gcc 4.7
 
 LIB_NAME := libefitcg2
 
@@ -74,26 +74,6 @@ dump-etet.so: $(DUMP_ETET_OBJS) $(LIB_TARGET)
 tpm2-efi-info.so: $(TPM2_EFI_INFO_OBJS) $(LIB_TARGET)
 tpm2-capability.so: $(TPM2_CAPABILITY_OBJS) $(LIB_TARGET)
 tpm2-eventlog.so: $(TPM2_EVENTLOG_OBJS) $(LIB_TARGET)
-
-%.so: %.o
-	$(LD) $(LDFLAGS) -o $@ --start-group $^ $(shell $(CC) -print-libgcc-file-name) \
--lgnuefi -lefi $(LIB_TARGET) --end-group
-	@echo '--------------- List unresolved symbols ---------------'
-	@! $(NM) $@ | grep -iw u
-	@echo '-------------------------------------------------------'
-
-%.efi: %.so
-	$(OBJCOPY) -j .text -j .sdata -j .data \
-		-j .dynamic -j .dynsym -j .rel* \
-		-j .rela* -j .reloc -j .eh_frame \
-		-j .debug_info -j .debug_abbrev -j .debug_aranges \
-		-j .debug_line -j .debug_str -j .debug_ranges \
-		-j .note.gnu.build-id \
-		$^ $@.debug
-	$(OBJCOPY) -j .text -j .sdata -j .data \
-		-j .dynamic -j .dynsym -j .rel* \
-		-j .rela* -j .reloc -j .eh_frame \
-		--target efi-app-$(EFI_ARCH) $^ $@
 
 build_info.c: build_info.c.in
 	sed -e "s~@@GIT_COMMIT@@~$(shell if [ -d $(TOPDIR)/.git ]; then git log -1 --pretty=format:%H | tr -d '\n'; elif [ -f $(TOPDIR)/commit ]; then cat $(TOPDIR)/commit | tr -d '\n'; else echo -n ???????; fi)~" \

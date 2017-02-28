@@ -24,7 +24,7 @@ gnuefi_libdir ?= $(libdir)
 
 LDFLAGS := --warn-common --no-undefined --fatal-warnings \
 	   $(patsubst $(join -Wl,,)%,%,$(EXTRA_LDFLAGS))
-CFLAGS := -std=gnu11 -O2 -Wall -Werror \
+CFLAGS := -std=gnu11 -O2 -Wall -Wsign-compare -Werror \
 	  $(addprefix -I, $(TOPDIR)/src/include) \
 	  $(EXTRA_CFLAGS) $(addprefix $(join -Wl,,),$(LDFLAGS))
 

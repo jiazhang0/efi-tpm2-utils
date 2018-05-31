@@ -7,7 +7,7 @@
  * See "LICENSE" for license terms.
  *
  * Author:
- *     Lans Zhang <jia.zhang@windriver.com>
+ *     Jia Zhang <zhang.jia@linux.alibaba.com>
  */
 
 const char *git_commit = "@@GIT_COMMIT@@";

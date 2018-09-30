@@ -508,7 +508,7 @@ ShowTcg1EventLogs(EFI_PHYSICAL_ADDRESS StartEntry,
 			      Event->EventSize);
 
 		Event = (TCG_PCR_EVENT *)((UINT8 *)(Event + 1) +
-			Event->EventSize);
+			Event->EventSize - sizeof(Event->Event));
 		++Index;
 	}
 }
